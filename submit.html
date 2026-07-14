@@ -92,9 +92,8 @@ button:not(:disabled):hover { opacity: 0.85; }
 </div>
 
 <script>
-const FB_API = 'https://firestore.googleapis.com/v1/projects/teacherstudy-109ef/databases/(default)/documents';
-const FB_KEY = 'AIzaSyAYQhNavPSce17XtvDC5xnXyl9iUhW9KjA';
-const FB_COL = 'class304_wordcloud';
+const BLOB_ID = '019f5fdd-ce4f-7274-b784-3edc5cc32fd4';
+const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/' + BLOB_ID;
 
 const input = document.getElementById('wc-input');
 const btn = document.getElementById('wc-btn');
@@ -105,14 +104,13 @@ async function handleSubmit() {
   if (!word) return;
   btn.disabled = true;
   try {
-    const r = await fetch(`${FB_API}/${FB_COL}?key=${FB_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fields: { word: { stringValue: word }, createdAt: { integerValue: Date.now() } }
-      })
-    });
-    if (r.ok) {
+    // 先讀取目前所有資料
+    const r = await fetch(BLOB_URL);
+    const words = r.ok ? await r.json() : [];
+    const next = Array.isArray(words) ? [...words, word] : [word];
+    // 寫回
+    const w = await fetch(BLOB_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    if (w.ok) {
       msg.textContent = '✅ 已送出！感謝您的祝福 💖';
       input.value = '';
     } else {
