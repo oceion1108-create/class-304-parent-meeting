@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>寫下期望 — 三年四班</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+  background: linear-gradient(135deg, #0d1117 0%, #1a1a2e 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #fff;
+}
+.card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+h1 {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #4fc3f7;
+  margin-bottom: 6px;
+}
+.sub {
+  font-size: 0.9em;
+  color: #888;
+  margin-bottom: 20px;
+}
+input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(79,195,247,0.3);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+input:focus { border-color: #4fc3f7; }
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  background: #4fc3f7;
+  color: #0d1117;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+button:disabled { opacity: 0.4; cursor: default; }
+button:not(:disabled):hover { opacity: 0.85; }
+.msg {
+  margin-top: 16px;
+  font-size: 0.85em;
+  color: #81c784;
+  min-height: 1.4em;
+}
+.footer {
+  margin-top: 20px;
+  font-size: 0.75em;
+  color: #555;
+}
+.emoji { font-size: 2.5em; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="emoji">💌</div>
+  <h1>寫下您的期望</h1>
+  <p class="sub">三年四班 班親會</p>
+  <input id="wc-input" type="text" placeholder="輸入對孩子的期許與祝福…" maxlength="20" />
+  <button id="wc-btn">送出祝福 ✨</button>
+  <div class="msg" id="wc-msg"></div>
+  <div class="footer">💡 送出後會即時顯示在教室螢幕上</div>
+</div>
+
+<script type="module">
+  // 嘗試 Firebase，失敗則本地儲存
+  let submitWord;
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js');
+    const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js');
+    const app = initializeApp({
+      apiKey: "AIzaSyAYQhNavPSce17XtvDC5xnXyl9iUhW9KjA",
+      authDomain: "teacherstudy-109ef.firebaseapp.com",
+      projectId: "teacherstudy-109ef",
+      storageBucket: "teacherstudy-109ef.firebasestorage.app",
+      messagingSenderId: "196599230156",
+      appId: "1:196599230156:web:cfe55d364df3ae1b9d5c69"
+    });
+    const wordsRef = collection(getFirestore(app), 'class304_wordcloud');
+    submitWord = async (word) => {
+      await addDoc(wordsRef, { word, created_at: serverTimestamp() });
+    };
+  } catch (e) {
+    console.warn('Firebase 無法連線，使用本地儲存', e);
+    const localKey = 'class304_words';
+    submitWord = async (word) => {
+      const stored = JSON.parse(localStorage.getItem(localKey) || '[]');
+      stored.push(word);
+      localStorage.setItem(localKey, JSON.stringify(stored));
+    };
+  }
+
+  const input = document.getElementById('wc-input');
+  const btn = document.getElementById('wc-btn');
+  const msg = document.getElementById('wc-msg');
+
+  async function handleSubmit() {
+    const word = input.value.trim();
+    if (!word) return;
+    btn.disabled = true;
+    try {
+      await submitWord(word);
+      msg.textContent = '✅ 已送出！感謝您的祝福 💖';
+      input.value = '';
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    } catch (e) {
+      msg.textContent = '❌ 送出失敗，請再試一次';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', handleSubmit);
+  input.addEventListener('keypress', e => { if (e.key === 'Enter') handleSubmit(); });
+  input.focus();
+</script>
+</body>
+</html>
