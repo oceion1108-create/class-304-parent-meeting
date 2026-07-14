@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>寫下期望 — 三年四班</title>
+<title>撖思??? ??銝僑?</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -82,42 +82,49 @@ button:not(:disabled):hover { opacity: 0.85; }
 </head>
 <body>
 <div class="card">
-  <div class="emoji">💌</div>
-  <h1>寫下您的期望</h1>
-  <p class="sub">三年四班 班親會</p>
-  <input id="wc-input" type="text" placeholder="輸入對孩子的期許與祝福…" maxlength="20" />
-  <button id="wc-btn">送出祝福 ✨</button>
+  <div class="emoji">??</div>
+  <h1>撖思??函???</h1>
+  <p class="sub">銝僑? ?剛扛??/p>
+  <input id="wc-input" type="text" placeholder="頛詨撠酋摮??迂??蝳? maxlength="20" />
+  <button id="wc-btn">?蟡? ??/button>
   <div class="msg" id="wc-msg"></div>
-  <div class="footer">💡 送出後會即時顯示在教室螢幕上</div>
+  <div class="footer">? ?敺??單?憿舐內?冽?摰方撟?</div>
 </div>
 
 <script>
-const BLOB_ID = '019f5fdd-ce4f-7274-b784-3edc5cc32fd4';
-const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/' + BLOB_ID;
+const API_BASE = '__API_SERVER__';
+const IS_LOCAL = !API_BASE.startsWith('__');
+const API = (IS_LOCAL ? API_BASE : window.location.origin) + '/api/words';
 
 const input = document.getElementById('wc-input');
 const btn = document.getElementById('wc-btn');
 const msg = document.getElementById('wc-msg');
+
+if (!IS_LOCAL) {
+  input.disabled = true;
+  btn.disabled = true;
+  msg.textContent = '? 隢??啁閬芣??曉 Wi-Fi 雿輻甇文???;
+  msg.style.color = '#ffb74d';
+}
 
 async function handleSubmit() {
   const word = input.value.trim();
   if (!word) return;
   btn.disabled = true;
   try {
-    // 先讀取目前所有資料
-    const r = await fetch(BLOB_URL);
-    const words = r.ok ? await r.json() : [];
-    const next = Array.isArray(words) ? [...words, word] : [word];
-    // 寫回
-    const w = await fetch(BLOB_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
-    if (w.ok) {
-      msg.textContent = '✅ 已送出！感謝您的祝福 💖';
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word })
+    });
+    if (r.ok) {
+      msg.textContent = '??撌脤嚗?雓??蝳???';
       input.value = '';
     } else {
-      msg.textContent = '❌ 送出失敗，請再試一次';
+      msg.textContent = '???憭望?嚗??岫銝甈?;
     }
   } catch (_) {
-    msg.textContent = '❌ 網路錯誤，請檢查連線';
+    msg.textContent = '??蝬脰楝?航炊嚗?瑼Ｘ???';
   } finally {
     btn.disabled = false;
     setTimeout(() => { msg.textContent = ''; }, 3000);
