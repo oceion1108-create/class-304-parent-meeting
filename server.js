@@ -68,7 +68,7 @@ http.createServer((req, res) => {
 
   let content = fs.readFileSync(filePath, 'utf8');
 
-  if (req.url === '/submit.html' || req.url === '/index.html') {
+  if (req.url === '/submit.html' || req.url === '/index.html' || req.url === '/') {
     const ip = Object.values(os.networkInterfaces()).flat()
       .find(i => i.family === 'IPv4' && !i.internal)?.address || 'localhost';
     content = content.replace('__API_SERVER__', `http://${ip}:${PORT}`);
